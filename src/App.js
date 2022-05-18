@@ -25,7 +25,7 @@ const App = () => {
     setResult("");
   };
 
-  const buttonColor = "#f2a33c";
+  const buttonColor = "#a56c02";
 
   return (
     <div className="App">
