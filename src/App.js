@@ -1,64 +1,170 @@
-import { useState } from "react";
-
-import * as math from "mathjs";
-
 import "./App.css";
-import Button from "./components/Button";
-import Input from "./components/Input";
+import { useState, useEffect } from "react";
+import NumberFormat from "react-number-format";
 
-const App = () => {
-  const [text, setText] = useState("");
-  const [result, setResult] = useState("");
+function App() {
+  const [preState, setPreState] = useState("");
+  const [curState, setCurState] = useState("");
+  const [input, setInput] = useState("0");
+  const [operator, setOperator] = useState(null);
+  const [total, setTotal] = useState(false);
 
-  const addToText = (val) => {
-    setText((text) => [...text, val + " "]);
+  const inputNum = (e) => {
+    if (curState.includes(".") && e.target.innerText === ".") return;
+
+    if (total) {
+      setPreState("");
+    }
+
+    curState
+      ? setCurState((pre) => pre + e.target.innerText)
+      : setCurState(e.target.innerText);
+    setTotal(false);
   };
 
-  const calculateResult = () => {
-    const input = text.join(""); // Remove commas
+  useEffect(() => {
+    setInput(curState);
+  }, [curState]);
 
-    setResult(math.evaluate(input));
+  useEffect(() => {
+    setInput("0");
+  }, []);
+  const operatorType = (e) => {
+    setTotal(false);
+    setOperator(e.target.innerText);
+    if (curState === "") return;
+    if (preState !== "") {
+      equals();
+    } else {
+      setPreState(curState);
+      setCurState("");
+    }
   };
 
-  const resetInput = () => {
-    setText("");
-    setResult("");
+  const equals = (e) => {
+    if (e?.target.innerText === "=") {
+      setTotal(true);
+    }
+    let cal;
+    switch (operator) {
+      case "/":
+        cal = String(parseFloat(preState) / parseFloat(curState));
+        break;
+
+      case "+":
+        cal = String(parseFloat(preState) + parseFloat(curState));
+        break;
+      case "X":
+        cal = String(parseFloat(preState) * parseFloat(curState));
+        break;
+      case "-":
+        cal = String(parseFloat(preState) - parseFloat(curState));
+        break;
+      default:
+        return;
+    }
+    setInput("");
+    setPreState(cal);
+    setCurState("");
   };
 
-  const buttonColor = "#a56c02";
+  const minusPlus = () => {
+    if (curState.charAt(0) === "-") {
+      setCurState(curState.substring(1));
+    } else {
+      setCurState("-" + curState);
+    }
+  };
 
+  const percent = () => {
+    preState
+      ? setCurState(String((parseFloat(curState) / 100) * preState))
+      : setCurState(String(parseFloat(curState) / 100));
+  };
+
+  const reset = () => {
+    setPreState("");
+    setCurState("");
+    setInput("0");
+  };
   return (
-    <div className="App">
-      <div className="calc-wrapper">
-        <Input text={text} result={result} />
-        <div className="row">
-          <Button symbol="7" handleClick={addToText} />
-          <Button symbol="8" handleClick={addToText} />
-          <Button symbol="9" handleClick={addToText} />
-          <Button symbol="/" color={buttonColor} handleClick={addToText} />
+    <div className='container'>
+      <div className='wrapper'>
+        <div className='screen'>
+          {input !== "" || input === "0" ? (
+            <NumberFormat
+              value={input}
+              displayType={"text"}
+              thousandSeparator={true}
+            />
+          ) : (
+            <NumberFormat
+              value={preState}
+              displayType={"text"}
+              thousandSeparator={true}
+            />
+          )}
         </div>
-        <div className="row">
-          <Button symbol="4" handleClick={addToText} />
-          <Button symbol="5" handleClick={addToText} />
-          <Button symbol="6" handleClick={addToText} />
-          <Button symbol="*" color={buttonColor} handleClick={addToText} />
+        <div className='btn light-gray' onClick={reset}>
+          AC
         </div>
-        <div className="row">
-          <Button symbol="1" handleClick={addToText} />
-          <Button symbol="2" handleClick={addToText} />
-          <Button symbol="3" handleClick={addToText} />
-          <Button symbol="+" color={buttonColor} handleClick={addToText} />
+        <div className='btn light-gray' onClick={percent}>
+          %
         </div>
-        <div className="row">
-          <Button symbol="0" handleClick={addToText} />
-          <Button symbol="." handleClick={addToText} />
-          <Button symbol="=" handleClick={calculateResult} />
-          <Button symbol="-" color={buttonColor} handleClick={addToText} />
+        <div className='btn light-gray' onClick={minusPlus}>
+          +/-
         </div>
-        <Button symbol="Clear" color="red" handleClick={resetInput} />
+        <div className='btn orange' onClick={operatorType}>
+          /
+        </div>
+        <div className='btn' onClick={inputNum}>
+          7
+        </div>
+        <div className='btn' onClick={inputNum}>
+          8
+        </div>
+        <div className='btn' onClick={inputNum}>
+          9
+        </div>
+        <div className='btn orange' onClick={operatorType}>
+          X
+        </div>
+        <div className='btn' onClick={inputNum}>
+          4
+        </div>
+        <div className='btn' onClick={inputNum}>
+          5
+        </div>
+        <div className='btn' onClick={inputNum}>
+          6
+        </div>
+        <div className='btn orange' onClick={operatorType}>
+          +
+        </div>
+        <div className='btn' onClick={inputNum}>
+          1
+        </div>
+        <div className='btn' onClick={inputNum}>
+          2
+        </div>
+        <div className='btn' onClick={inputNum}>
+          3
+        </div>
+        <div className='btn orange' onClick={operatorType}>
+          -
+        </div>
+        <div className='btn zero' onClick={inputNum}>
+          0
+        </div>
+        <div className='btn' onClick={inputNum}>
+          .
+        </div>
+        <div className='btn' onClick={equals}>
+          =
+        </div>
       </div>
     </div>
   );
-};
+}
 
 export default App;
